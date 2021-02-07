@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+  <Type Name='sgc::gc_ptr&lt;*&gt;'>
+    <Intrinsic Name='object' Expression='($T2*)((uint8_t*)_ref->to+sizeof(sgc::object_header))'/>
+    <DisplayString Condition='_ref == 0'>empty</DisplayString>
+    <DisplayString>{{ gc_ptr {*(object())} }}</DisplayString>
+    <Expand>
+      <Item Name='[ptr]'>object()</Item>
+      <Item Name='[parent]'>_root</Item>
+    </Expand>
+  </Type>
+  <Type Name='sgc::reference'>
+    <DisplayString>{{ to {to+sizeof(sgc::object_header)} }}</DisplayString>
+  </Type>
+  <Type Name='sgc::details::link_chain&lt;*&gt;'>
+    <DisplayString Condition='head == 0'>empty</DisplayString>
+    <DisplayString>[chain]</DisplayString>
+    <Expand>
+      <CustomListItems>
+        <Variable Name="cursor" InitialValue="head"/>
+        <Variable Name="i" InitialValue="0"/>
+        <Loop Condition='cursor != 0'>
+          <Item Name='[{i}]'>cursor</Item>
+          <Exec>cursor = cursor->next</Exec>
+          <Exec>++i</Exec>
+        </Loop>
+      </CustomListItems>
+    </Expand>
+  </Type>
+</AutoVisualizer>

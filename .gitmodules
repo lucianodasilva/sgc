@@ -1,0 +1,6 @@
+[submodule "extras/deps/benchmark"]
+	path = extras/deps/benchmark
+	url = https://github.com/google/benchmark.git
+[submodule "extras/deps/Catch2"]
+	path = extras/deps/Catch2
+	url = https://github.com/catchorg/Catch2.git

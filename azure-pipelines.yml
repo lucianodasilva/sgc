@@ -1,0 +1,53 @@
+trigger:
+- master
+
+stages:
+- stage: compile
+  jobs:
+  - job: build
+    strategy:
+      matrix:
+        linux_x64:
+          imageName: 'ubuntu-16.04'
+          cmakeConfigArgs: '-DCMAKE_CC_COMPILER=gcc-7 -DCMAKE_CXX_COMPILER=g++-7 -DCMAKE_C_FLAGS=-m64 -DCMAKE_CXX_FLAGS=-m64'
+          buildArch: '64'
+        linux_x86:
+          imageName: 'ubuntu-16.04'
+          cmakeConfigArgs: '-DCMAKE_CC_COMPILER=gcc-7 -DCMAKE_CXX_COMPILER=g++-7 -DCMAKE_C_FLAGS=-m32 -DCMAKE_CXX_FLAGS=-m32'
+          buildArch: '32'
+        windows_x64:
+          imageName: 'vs2017-win2016'
+          cmakeConfigArgs: '-A x64'
+          buildArch: '64'
+        windows_x86:
+          imageName: 'vs2017-win2016'
+          cmakeConfigArgs: '-A Win32'
+          buildArch: '32'
+    pool:
+      vmImage: $(imageName)
+
+    steps:
+    - checkout: self
+      submodules: "true"
+
+    - task: PowerShell@2
+      displayName: 'Run build script'
+      inputs:
+        filePath: 'extras/ci/build.ps1'
+        arguments: '-cmake_args "$(cmakeConfigArgs)" -arch "$(buildArch)"'
+    
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Build Folder'
+      inputs:
+        PathtoPublish: '$(System.DefaultWorkingDirectory)/build/tests'
+        ArtifactName: build.$(imageName).$(buildArch)
+
+    - task: PublishTestResults@2
+      displayName: 'Publish Test Results'
+      inputs:
+        testResultsFormat: JUnit
+        mergeTestResults: true
+        testResultsFiles: '$(System.DefaultWorkingDirectory)/build/tests/out/*.xml'
+        testRunTitle: 'All Tests'
+        buildPlatform: $(Agent.OS)
+        buildConfiguration: Release
