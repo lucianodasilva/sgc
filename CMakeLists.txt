@@ -7,6 +7,8 @@ option (SGC_BENCHMARKS "enable compilation of benchmarks" OFF)
 
 set (CXX_STANDARD 14)
 
+include(FetchContent)
+
 add_library (sgc STATIC
         include/sgc.h
 		include/sgc/details/bitset.h
@@ -56,16 +58,23 @@ target_include_directories(sgc PUBLIC
 # unit testing
 if (SGC_UNIT_TESTS)
 
-	add_subdirectory(extras/deps/catch2)
+	FetchContent_Declare(
+		catch2
+		GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+		GIT_TAG v2.13.4
+		GIT_SHALLOW TRUE)
 
-	add_executable (sgc_unit_test
+	FetchContent_MakeAvailable (
+		catch2)
+	
+	add_executable (
+			sgc_unit_test
 			test/test_tools.h
 			test/test_tools.cpp
 			test/main.cpp
 			test/memory_model.cpp
 			test/object_cache.cpp
-			test/ref_cache.cpp
-			)
+			test/ref_cache.cpp)
 
 	set_target_properties(
 			sgc_unit_test
@@ -76,7 +85,9 @@ if (SGC_UNIT_TESTS)
 
 	target_link_libraries (sgc_unit_test PRIVATE sgc Catch2::Catch2)
 
-	add_executable (sgc_demo test/demo.cpp)
+	add_executable (
+			sgc_demo
+			test/demo.cpp)
 
 	target_link_libraries (sgc_demo PUBLIC sgc)
 endif()
@@ -84,11 +95,19 @@ endif()
 # unit testing
 if (SGC_BENCHMARKS)
 
-	set (BENCHMARK_ENABLE_TESTING OFF)
-	set (BENCHMARK_ENABLE_GTEST_TESTS OFF)
-	add_subdirectory(extras/deps/benchmark)
+	set (BENCHMARK_ENABLE_TESTING CACHE BOOL OFF FORCE)
+	set (BENCHMARK_ENABLE_GTEST_TESTS CACHE BOOL OFF FORCE)
 
-	add_executable (sgc_benchmark
+	FetchContent_Declare(
+		googlebenchmark
+        GIT_REPOSITORY https://github.com/google/benchmark
+		GIT_TAG v1.5.2
+		GIT_SHALLOW TRUE)
+
+	FetchContent_MakeAvailable(googlebenchmark)
+
+	add_executable (
+			sgc_benchmark
 			benchmark/main.cpp)
 
 	set_target_properties(
@@ -98,28 +117,30 @@ if (SGC_BENCHMARKS)
 			CXX_STANDARD_REQUIRED ON
 			RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/benchmark)
 
-	target_link_libraries (sgc_benchmark PRIVATE sgc benchmark)
+	target_link_libraries (sgc_benchmark PRIVATE sgc benchmark::benchmark)
 
-	if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-		target_compile_options(sgc PUBLIC
-				-fno-omit-frame-pointer
-				-g)
+	#	-- Flags for profiling --
+	#
+	#if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+	#	target_compile_options(sgc PUBLIC
+	#			-fno-omit-frame-pointer
+	#			-g)
 
-		target_compile_options(sgc_benchmark PUBLIC
-				-fno-omit-frame-pointer
-				-g)
-	endif()
+	#	target_compile_options(sgc_benchmark PUBLIC
+	#			-fno-omit-frame-pointer
+	#			-g)
+	#endif()
 
-	if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
-		target_compile_options(sgc PUBLIC
-			/Z7 )
+	#if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+	#	target_compile_options(sgc PUBLIC
+	#		/Z7 )
 
-		set_target_properties (sgc PROPERTIES LINK_FLAGS "/PROFILE")
+	#	set_target_properties (sgc PROPERTIES LINK_FLAGS "/PROFILE")
 
-		target_compile_options(sgc_benchmark PUBLIC
-			/Z7 )
+	#	target_compile_options(sgc_benchmark PUBLIC
+	#		/Z7 )
 
-		set_target_properties (sgc_benchmark PROPERTIES LINK_FLAGS "/PROFILE")
-	endif()
+	#	set_target_properties (sgc_benchmark PROPERTIES LINK_FLAGS "/PROFILE")
+	#endif()
 
 endif()

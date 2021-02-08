@@ -95,10 +95,12 @@ void no_gc_baseline_collect(benchmark::State &state) {
 #define BENCH_LOW 1U << 8U
 #define BENCH_HIGH 1U << 18U
 
-BENCHMARK(gc_alloc_assign)->Range(BENCH_LOW, BENCH_HIGH);
-//BENCHMARK(no_gc_baseline_alloc)->Range(BENCH_LOW, BENCH_HIGH);
+#define BENCH_RANGE Range(BENCH_LOW, BENCH_HIGH)->Unit(benchmark::TimeUnit::kMillisecond)
 
-//BENCHMARK(gc_collect)->Range(BENCH_LOW, BENCH_HIGH);
-//BENCHMARK(no_gc_baseline_collect)->Range(BENCH_LOW, BENCH_HIGH);
+BENCHMARK(gc_alloc_assign)->BENCH_RANGE;
+BENCHMARK(no_gc_baseline_alloc)->BENCH_RANGE;
+
+BENCHMARK(gc_collect)->BENCH_RANGE;
+BENCHMARK(no_gc_baseline_collect)->BENCH_RANGE;
 
 BENCHMARK_MAIN();
