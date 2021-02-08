@@ -1,7 +1,12 @@
-name: CMake
+name: Build and Test
 
-on: [push]
-
+on:
+  push:
+    branches: 
+      - main
+  pull_request:
+    branches: 
+      - main
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: Release
@@ -43,4 +48,10 @@ jobs:
       working-directory: ${{github.workspace}}/build/tests
       shell: pwsh
       # Execute unit test executable
-      run: ./sgc_unit_test
+      run: ./sgc_unit_test -r junit | Out-File -FilePath report.xml
+      
+    - name: Publish
+      uses: EnricoMi/publish-unit-test-result-action@v1
+      if: always ()
+      with:
+        files: ${{github.workspace}}/build/tests/report.xml
