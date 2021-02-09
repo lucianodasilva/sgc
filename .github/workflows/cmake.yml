@@ -52,7 +52,7 @@ jobs:
       working-directory: ${{github.workspace}}/build/tests
       shell: pwsh
       # Execute unit test executable
-      run: ./sgc_unit_test -r junit | Out-File -FilePath report.xml
+      run: Invoke-Expression "./sgc_unit_test -r junit" | Out-File -FilePath report.xml
       
     - name: Publish
       uses: EnricoMi/publish-unit-test-result-action@v1
