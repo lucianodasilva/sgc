@@ -54,6 +54,6 @@ jobs:
       
     - name: Publish
       uses: EnricoMi/publish-unit-test-result-action@v1
-      if: always ()
       with:
+        github_token: ${{secrets.GITHUB_TOKEN}}
         files: ${{github.workspace}}/build/tests/report.xml
