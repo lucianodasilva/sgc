@@ -72,6 +72,6 @@ jobs:
       - name: Publish Unit Test Results
         uses: EnricoMi/publish-unit-test-result-action@master
         with:
-          check_name: Unit Test Results
+          check_name: unit-test-artifacts
           github_token: ${{ secrets.GITHUB_TOKEN }}
           files: "artifacts/*.xml"
