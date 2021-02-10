@@ -52,10 +52,26 @@ jobs:
       working-directory: ${{github.workspace}}/build/tests
       shell: pwsh
       # Execute unit test executable
-      run: Invoke-Expression "./sgc_unit_test -r junit" | Out-File -FilePath report.xml
-      
-    - name: Publish
-      uses: EnricoMi/publish-unit-test-result-action@v1
+      run: Invoke-Expression "./sgc_unit_test -r junit" | Out-File -FilePath test-report-${{matrix.os}}.xml
+    
+    - uses: actions/upload-artifact@v2
       with:
-        github_token: ${{secrets.GITHUB_TOKEN}}
-        files: build/tests/*.xml
+        name: unit-test-artifacts
+        path: build/tests/*.xml
+      
+  publish-test-results:
+    name: "Publish Unit Tests Results"
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Artifacts
+        uses: actions/download-artifact@v2
+        with:
+          path: artifacts
+
+      - name: Publish Unit Test Results
+        uses: EnricoMi/publish-unit-test-result-action@master
+        with:
+          check_name: Unit Test Results
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          files: "artifacts/*.xml"
